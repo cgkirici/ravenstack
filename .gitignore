@@ -1,0 +1,8 @@
+target/
+dbt_packages/
+logs/
+.vscode
+.env/
+.user.yml
+analysis/
+seeds/
