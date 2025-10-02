@@ -1,0 +1,74 @@
+# Example profiles.yml configuration for ravenstack
+# Copy this file to ~/.dbt/profiles.yml and update with your credentials
+# 
+# IMPORTANT: Never commit profiles.yml with actual credentials to version control!
+
+ravenstack:
+  target: dev
+  outputs:
+    dev:
+      type: postgres
+      host: localhost
+      user: your_username
+      password: your_password
+      port: 5432
+      dbname: your_database
+      schema: dbt_dev
+      threads: 4
+      keepalives_idle: 0
+      connect_timeout: 10
+    
+    prod:
+      type: postgres
+      host: your_prod_host
+      user: your_prod_username
+      password: your_prod_password
+      port: 5432
+      dbname: your_prod_database
+      schema: analytics
+      threads: 8
+      keepalives_idle: 0
+      connect_timeout: 10
+
+# Alternative configurations for other database adapters:
+
+# For Snowflake:
+# ravenstack:
+#   target: dev
+#   outputs:
+#     dev:
+#       type: snowflake
+#       account: your_account
+#       user: your_username
+#       password: your_password
+#       role: your_role
+#       database: your_database
+#       warehouse: your_warehouse
+#       schema: dbt_dev
+#       threads: 4
+
+# For BigQuery:
+# ravenstack:
+#   target: dev
+#   outputs:
+#     dev:
+#       type: bigquery
+#       method: service-account
+#       project: your_project_id
+#       dataset: dbt_dev
+#       threads: 4
+#       keyfile: /path/to/service-account.json
+
+# For Redshift:
+# ravenstack:
+#   target: dev
+#   outputs:
+#     dev:
+#       type: redshift
+#       host: your_host.redshift.amazonaws.com
+#       user: your_username
+#       password: your_password
+#       port: 5439
+#       dbname: your_database
+#       schema: dbt_dev
+#       threads: 4
