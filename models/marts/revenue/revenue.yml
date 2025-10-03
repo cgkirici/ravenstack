@@ -1,0 +1,71 @@
+version: 2
+
+models:
+  - name: account_subscription_details
+    description: >
+      Aggregates subscription details and history at the account level.
+      Provides subscription counts, date ranges, latest subscription details, and upgrade/downgrade
+      history for each customer account.
+    
+    columns:
+      - name: account_id
+        description: "Unique identifier for each customer account"
+        tests:
+          - not_null
+          - unique
+      
+      - name: total_subscriptions
+        description: "Total number of subscriptions the account has had"
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+      
+      - name: first_subscription_date
+        description: "Date of the account's first subscription"
+        tests:
+          - not_null
+      
+      - name: last_subscription_date
+        description: "Date of the account's most recent subscription"
+        tests:
+          - not_null
+      
+      - name: latest_plan_tier
+        description: "Most recent plan tier (Basic, Pro, Enterprise)"
+        tests:
+          - accepted_values:
+              values: ['Basic', 'Pro', 'Enterprise']
+      
+      - name: latest_seats
+        description: "Number of seats in the most recent subscription"
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 1
+              max_value: 10000
+      
+      - name: upgrade_count
+        description: "Number of times the account has upgraded"
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+      
+      - name: downgrade_count
+        description: "Number of times the account has downgraded"
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+    
+    tests:
+      - dbt_utils.expression_is_true:
+          expression: "first_subscription_date <= last_subscription_date"
+          config:
+            severity: error
+      
+      - dbt_utils.expression_is_true:
+          expression: "total_subscriptions >= 1"
+          config:
+            severity: error
