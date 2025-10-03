@@ -1,0 +1,12 @@
+version: 2
+
+sources:
+  - name: crm
+    database: my-data-warehouse-349414
+    schema: ravenstack_raw
+    tables:
+      - name: ravenstack_accounts
+      - name: ravenstack_churn_events
+      - name: ravenstack_feature_usage
+      - name: ravenstack_subscriptions
+      - name: ravenstack_support_tickets
