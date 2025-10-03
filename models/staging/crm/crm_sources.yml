@@ -9,4 +9,4 @@ sources:
       - name: ravenstack_churn_events
       - name: ravenstack_feature_usage
       - name: ravenstack_subscriptions
-      - name: ravenstack_support_tickets
+      - name: ravenstack_support_tickets_with_text

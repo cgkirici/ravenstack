@@ -69,3 +69,10 @@ models:
           expression: "total_subscriptions >= 1"
           config:
             severity: error
+
+  - name: retention_metrics
+    columns:
+      - name: feature_name
+        tests:
+          - not_null
+          - unique

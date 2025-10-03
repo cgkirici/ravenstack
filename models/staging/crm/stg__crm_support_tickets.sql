@@ -1,6 +1,6 @@
 with source as (
 
-    select * from {{ source('crm', 'ravenstack_support_tickets') }}
+    select * from {{ source('crm', 'ravenstack_support_tickets_with_text') }}
 
 ),
 
@@ -15,7 +15,9 @@ renamed as (
         priority,
         first_response_time_minutes,
         satisfaction_score,
-        escalation_flag
+        escalation_flag,
+        subject,
+        body
 
     from source
 
