@@ -1,0 +1,60 @@
+version: 2
+
+models:
+  - name: stg__crm_accounts
+    columns:
+      - name: account_id
+        tests:
+          - unique
+          - not_null
+  - name: stg__crm_churn_events
+    columns:
+      - name: churn_event_id
+        tests:
+          - unique
+          - not_null
+version: 2
+
+models:
+  - name: feature_usage_clean
+    description: |
+      Cleaned feature usage data for SaaS product analytics. This model processes 
+      raw usage events and applies data quality filters to ensure analytical reliability.
+      
+      **Data Quality Note:**
+      This model excludes records where usage_id is not unique. In the source data, 
+      usage_id is expected to serve as a unique identifier for each usage event. 
+      However, a small percentage of records (<5%) contain duplicate usage_ids across 
+      different subscriptions, dates, and features - indicating data quality issues 
+      rather than valid business logic.
+      
+      **Exclusion Rationale:**
+      - usage_id duplicates represent corrupted or improperly generated identifiers
+      - Retaining duplicates would create ambiguity in event-level analysis
+      - The low volume of affected records minimizes impact on aggregate metrics
+      - Exclusion prevents potentially invalid data from skewing results
+      
+      **Impact:**
+      Approximately <5% of source records are excluded. Users should be aware that 
+      total usage counts may be slightly lower than raw source data.
+    columns:
+      - name: usage_id
+        description: |
+          Unique identifier for each feature usage event. This is the primary key 
+          for this model. All duplicate usage_ids from the source are excluded..
+        tests:
+          - unique
+          - not_null
+  - name: stg__crm_subscriptions
+    columns:
+      - name: subscription_id
+        tests:
+          - unique
+          - not_null
+
+  - name: stg__crm_support_tickets
+    columns:
+      - name: ticket_id
+        tests:
+          - unique
+          - not_null
