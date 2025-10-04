@@ -2,59 +2,160 @@ version: 2
 
 models:
   - name: stg__crm_accounts
+    description: >
+      Staging model for customer account master data. Contains account-level attributes 
+      including demographic, subscription, and churn status information. Granularity: 
+      one row per account. Core dimensions: industry, country, plan_tier. Key flags: 
+      customer_churn_flag, is_trial.
     columns:
       - name: account_id
+        description: "Unique identifier for customer account, primary key"
         tests:
           - unique
           - not_null
+      - name: account_name
+        description: "Customer account display name"
+      - name: industry
+        description: "Business industry classification for segmentation analysis"
+      - name: country
+        description: "Geographic location for regional performance analysis" 
+      - name: signup_date
+        description: "Initial account registration date for cohort analysis"
+      - name: referral_source
+        description: "Customer acquisition channel for marketing attribution"
+      - name: plan_tier
+        description: "Current subscription plan level: Basic, Pro, Enterprise"
+      - name: seats
+        description: "Number of licensed user seats in current plan"
+      - name: is_trial
+        description: "Boolean flag indicating trial account status"
+      - name: customer_churn_flag
+        description: "Boolean flag indicating account has churned"
+
   - name: stg__crm_churn_events
+    description: >
+      Staging model for customer churn events. Contains churn-specific metrics 
+      including churn date, reason codes, refund amounts, and preceding account 
+      behavior flags. Granularity: one row per churn event. Core dimensions: 
+      churn_reason, preceding upgrade/downgrade flags.
     columns:
       - name: churn_event_id
+        description: "Unique identifier for churn event, primary key"
         tests:
           - unique
           - not_null
-version: 2
+      - name: account_id
+        description: "Foreign key to account that churned"
+      - name: churn_date
+        description: "Date when churn event occurred"
+      - name: churn_reason
+        description: "Categorized reason code for churn: budget, competitor, features, support, unknown, pricing"
+      - name: refund_amount_usd
+        description: "Dollar amount refunded to customer upon churn"
+      - name: preceding_upgrade_flag
+        description: "Boolean flag indicating account upgraded before churning"
+      - name: preceding_downgrade_flag
+        description: "Boolean flag indicating account downgraded before churning"
+      - name: is_reactivation
+        description: "Boolean flag indicating churn event was later reactivated"
+      - name: feedback_text
+        description: "Free-text customer feedback provided during churn process"
 
-models:
-  - name: feature_usage_clean
-    description: |
-      Cleaned feature usage data for SaaS product analytics. This model processes 
-      raw usage events and applies data quality filters to ensure analytical reliability.
-      
-      **Data Quality Note:**
-      This model excludes records where usage_id is not unique. In the source data, 
-      usage_id is expected to serve as a unique identifier for each usage event. 
-      However, a small percentage of records (<5%) contain duplicate usage_ids across 
-      different subscriptions, dates, and features - indicating data quality issues 
-      rather than valid business logic.
-      
-      **Exclusion Rationale:**
-      - usage_id duplicates represent corrupted or improperly generated identifiers
-      - Retaining duplicates would create ambiguity in event-level analysis
-      - The low volume of affected records minimizes impact on aggregate metrics
-      - Exclusion prevents potentially invalid data from skewing results
-      
-      **Impact:**
-      Approximately <5% of source records are excluded. Users should be aware that 
-      total usage counts may be slightly lower than raw source data.
+  - name: stg__crm_feature_usage
+    description: >
+      Staging model for product feature usage events with data quality filtering. 
+      Excludes duplicate usage_id records to ensure analytical reliability. 
+      Granularity: one row per feature usage event. Core dimensions: feature_name, 
+      subscription_id, usage_date. Core metrics: usage_count, usage_duration_secs.
     columns:
       - name: usage_id
-        description: |
-          Unique identifier for each feature usage event. This is the primary key 
-          for this model. All duplicate usage_ids from the source are excluded..
+        description: "Unique identifier for feature usage event, primary key. Duplicate usage_ids excluded during staging"
         tests:
           - unique
           - not_null
+      - name: subscription_id
+        description: "Foreign key to subscription generating usage event"
+      - name: usage_date
+        description: "Date when feature usage occurred"
+      - name: feature_name
+        description: "Name of product feature being used"
+      - name: usage_count
+        description: "Number of usage interactions within the event"
+      - name: usage_duration_secs
+        description: "Total duration of feature usage in seconds"
+      - name: error_count
+        description: "Number of errors encountered during feature usage"
+      - name: is_beta_feature
+        description: "Boolean flag indicating feature is in beta testing phase"
+
   - name: stg__crm_subscriptions
+    description: >
+      Staging model for customer subscription lifecycle data. Contains subscription 
+      details, billing information, and subscription state flags. Granularity: 
+      one row per subscription. Core dimensions: plan_tier, billing_frequency. 
+      Core metrics: mrr_amount, arr_amount, seats.
     columns:
       - name: subscription_id
+        description: "Unique identifier for subscription, primary key"
         tests:
           - unique
           - not_null
+      - name: account_id
+        description: "Foreign key to owning customer account"
+      - name: start_date
+        description: "Subscription start date for tenure calculations"
+      - name: end_date
+        description: "Subscription end date, null for active subscriptions"
+      - name: plan_tier
+        description: "Subscription plan level: Basic, Pro, Enterprise"
+      - name: seats
+        description: "Number of user seats included in subscription"
+      - name: mrr_amount
+        description: "Monthly recurring revenue amount in USD"
+      - name: arr_amount
+        description: "Annual recurring revenue amount in USD, calculated as mrr_amount * 12"
+      - name: is_trial
+        description: "Boolean flag indicating trial subscription status"
+      - name: upgrade_flag
+        description: "Boolean flag indicating subscription was an upgrade from previous plan"
+      - name: downgrade_flag
+        description: "Boolean flag indicating subscription was a downgrade from previous plan"
+      - name: churn_flag
+        description: "Boolean flag indicating subscription has churned"
+      - name: billing_frequency
+        description: "Billing cycle frequency: monthly, annual"
+      - name: auto_renew_flag
+        description: "Boolean flag indicating subscription auto-renewal is enabled"
 
   - name: stg__crm_support_tickets
+    description: >
+      Staging model for customer support ticket data. Contains ticket details, 
+      response metrics, resolution information, and satisfaction scores. 
+      Granularity: one row per support ticket. Core dimensions: priority, account_id. 
+      Core metrics: resolution_time_hours, first_response_time_minutes, satisfaction_score.
     columns:
       - name: ticket_id
+        description: "Unique identifier for support ticket, primary key"
         tests:
           - unique
           - not_null
+      - name: account_id
+        description: "Foreign key to customer account that submitted ticket"
+      - name: submitted_at
+        description: "Timestamp when ticket was initially submitted"
+      - name: closed_at
+        description: "Timestamp when ticket was resolved/closed, null for open tickets"
+      - name: resolution_time_hours
+        description: "Total time from submission to resolution in hours"
+      - name: priority
+        description: "Ticket priority level: low, normal, high, critical"
+      - name: first_response_time_minutes
+        description: "Time from submission to first support response in minutes"
+      - name: satisfaction_score
+        description: "Customer satisfaction rating 1-5 scale, 5 being highest satisfaction"
+      - name: escalation_flag
+        description: "Boolean flag indicating ticket was escalated to higher support tier"
+      - name: subject
+        description: "Ticket subject line for categorization analysis"
+      - name: body
+        description: "Full ticket description text for sentiment analysis"

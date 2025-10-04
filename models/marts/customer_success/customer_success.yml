@@ -23,27 +23,27 @@ models:
       
       # Account Attributes
       - name: industry
-        description: "Industry sector of the customer"
+        description: "Industry sector classification for customer segmentation and churn pattern analysis"
       
       - name: country
-        description: "Country where the customer is located"
+        description: "Geographic location for regional performance and churn analysis"
       
       - name: signup_date
-        description: "Date when the customer first signed up"
+        description: "Initial account registration date for customer tenure and cohort analysis"
         tests:
           - not_null
       
       - name: referral_source
-        description: "Source through which the customer was acquired"
+        description: "Customer acquisition channel for marketing attribution and churn correlation"
       
       - name: plan_tier
-        description: "Current subscription plan tier (Basic, Pro, Enterprise)"
+        description: "Current subscription plan tier (Basic, Pro, Enterprise) for revenue segmentation"
         tests:
           - accepted_values:
               values: ['Basic', 'Pro', 'Enterprise']
       
       - name: seats
-        description: "Number of seats/licenses in the current subscription"
+        description: "Number of licensed user seats, indicator of account size and potential expansion"
         tests:
           - not_null
           - dbt_utils.accepted_range:
@@ -51,7 +51,7 @@ models:
               max_value: 10000
       
       - name: is_trial
-        description: "Boolean flag indicating if the account is currently on a trial"
+        description: "Boolean flag indicating trial account status, excludes from revenue calculations"
       
       # Churn Status
       - name: customer_churn_flag
@@ -60,10 +60,10 @@ models:
           - not_null
 
       - name: customer_churn_date
-        description: "Date when the customer churned (null if still active)"
+        description: "Date when customer churned, used for churn timing and seasonality analysis"
       
       - name: latest_churn_reason
-        description: "Primary reason for churn (budget, competitor, features, etc.)"
+        description: "Primary churn reason category for root cause analysis and retention strategy"
         tests:
           - accepted_values:
               values: ['budget', 'competitor', 'features', 'support', 'unknown', 'pricing']
@@ -71,7 +71,7 @@ models:
                 where: "customer_churn_flag = true"
 
       - name: total_refund_amount
-        description: "Amount refunded to the customer upon churn (in USD)"
+        description: "Total USD amount refunded upon churn, indicator of churn cost and customer value lost"
         tests:
           - dbt_utils.accepted_range:
               min_value: 0
@@ -80,27 +80,27 @@ models:
       
       # Subscription History
       - name: total_subscriptions
-        description: "Total number of subscriptions the customer has had"
+        description: "Count of subscription instances for account lifecycle and engagement analysis"
         tests:
           - not_null
           - dbt_utils.accepted_range:
               min_value: 0
       
       - name: upgrade_count
-        description: "Number of times the customer has upgraded their plan"
+        description: "Number of plan upgrades, indicator of account growth and expansion success"
         tests:
           - dbt_utils.accepted_range:
               min_value: 0
       
       - name: downgrade_count
-        description: "Number of times the customer has downgraded their plan"
+        description: "Number of plan downgrades, indicator of potential churn risk and value compression"
         tests:
           - dbt_utils.accepted_range:
               min_value: 0
       
       # Support Ticket Metrics
       - name: total_tickets
-        description: "Total number of support tickets submitted by the customer"
+        description: "Total support tickets submitted, indicator of product satisfaction and usage complexity"
         tests:
           - not_null
           - dbt_utils.accepted_range:
@@ -108,7 +108,7 @@ models:
       
       # Satisfaction Scores
       - name: avg_satisfaction_score
-        description: "Average satisfaction score across all tickets (1-5 scale)"
+        description: "Average customer satisfaction score across all tickets (1-5 scale), predictor of churn risk"
         tests:
           - dbt_utils.accepted_range:
               min_value: 1
@@ -118,17 +118,17 @@ models:
       
       # Correlation Flags
       - name: has_low_satisfaction
-        description: "Boolean flag indicating if customer has average satisfaction <= 3"
+        description: "Boolean flag for avg satisfaction <= 3, derived churn risk indicator"
         tests:
           - not_null
       
       - name: has_escalations
-        description: "Boolean flag indicating if customer has had any escalated tickets"
+        description: "Boolean flag for presence of escalated tickets, indicator of complex support needs"
         tests:
           - not_null
       
       - name: high_ticket_volume
-        description: "Boolean flag indicating if customer has >= 5 tickets in last 90 days"
+        description: "Boolean flag for >= 5 tickets in last 90 days, indicator of product friction or power usage"
         tests:
           - not_null
 
@@ -146,10 +146,139 @@ models:
           config:
             severity: error
 
-  - name: int_churn_events_by_customer    
+  - name: int_churn_events_by_customer
+    description: >
+      Intermediate model aggregating churn events at customer level. Combines account 
+      data with churn event details to provide consolidated churn information per account. 
+      Granularity: one row per account. Core dimensions: account_id, industry, country, 
+      plan_tier. Core metrics: total_refund_amount.
     columns:
       - name: account_id
-        description: "Unique identifier for each customer account"
+        description: "Unique identifier for each customer account, primary key"
         tests:
           - not_null
           - unique
+      - name: account_name
+        description: "Customer account display name"
+      - name: industry
+        description: "Business industry classification for churn pattern analysis"
+      - name: country
+        description: "Geographic location for regional churn analysis"
+      - name: signup_date
+        description: "Initial account registration date for tenure analysis"
+      - name: referral_source
+        description: "Customer acquisition channel for churn attribution"
+      - name: plan_tier
+        description: "Account subscription plan level: Basic, Pro, Enterprise"
+      - name: seats
+        description: "Number of licensed user seats"
+      - name: is_trial
+        description: "Boolean flag indicating trial account status"
+      - name: customer_churn_flag
+        description: "Boolean flag indicating account has churned"
+      - name: customer_churn_date
+        description: "Date when account churned, null for active accounts"
+      - name: latest_churn_reason
+        description: "Most recent churn reason: budget, competitor, features, support, unknown, pricing"
+      - name: total_refund_amount
+        description: "Total amount refunded across all churn events for this account"
+
+  - name: monthly_churn_metrics
+    description: >
+      Monthly churn rate analysis with support ticket correlation metrics. Combines 
+      churn counts, active accounts, and support metrics to calculate churn rates and 
+      identify support-churn correlations. Granularity: one row per month. 
+      Core metrics: churn_rate_pct, support_to_churn_correlation, avg_satisfaction_score.
+    columns:
+      - name: month_start
+        description: "First day of the month for time series analysis"
+      - name: accounts_at_start
+        description: "Total number of active accounts at beginning of month"  
+      - name: subscriptions_at_start
+        description: "Total number of active subscriptions at beginning of month"
+      - name: enterprise_at_start
+        description: "Number of Enterprise accounts at beginning of month"
+      - name: pro_at_start
+        description: "Number of Pro accounts at beginning of month"
+      - name: basic_at_start
+        description: "Number of Basic accounts at beginning of month"
+      - name: churned_accounts
+        description: "Number of accounts that churned during the month"
+      - name: cancelled_subscriptions
+        description: "Number of subscriptions cancelled during the month"
+      - name: churn_rate_pct
+        description: "Monthly churn rate calculated as churned_accounts / accounts_at_start * 100"
+      - name: total_tickets
+        description: "Total support tickets submitted during the month"
+      - name: avg_satisfaction_score
+        description: "Average customer satisfaction score for tickets in the month"
+      - name: escalated_tickets
+        description: "Number of support tickets escalated during the month"
+      - name: accounts_with_escalations
+        description: "Number of unique accounts with escalated tickets"
+
+  - name: monthly_churned_accounts
+    description: >
+      Monthly churn analysis by reason and plan tier segmentation. Tracks churn counts 
+      and patterns across different dimensions. Granularity: one row per month. 
+      Core dimensions: month_start. Core metrics: churned_accounts, cancelled_subscriptions 
+      by reason and tier.
+    columns:
+      - name: month_start
+        description: "First day of the month for time series analysis"
+      - name: churned_accounts
+        description: "Total number of accounts that churned during the month"
+      - name: cancelled_subscriptions
+        description: "Total number of subscriptions cancelled during the month"
+      - name: cancelled_for_budget
+        description: "Number of accounts cancelled due to budget constraints"
+      - name: cancelled_for_competitor
+        description: "Number of accounts cancelled due to competitor switching"
+      - name: cancelled_for_features
+        description: "Number of accounts cancelled due to missing features"
+      - name: cancelled_for_support
+        description: "Number of accounts cancelled due to support issues"
+      - name: cancelled_for_unknown
+        description: "Number of accounts cancelled for unknown reasons"
+      - name: cancelled_for_pricing
+        description: "Number of accounts cancelled due to pricing concerns"
+      - name: churned_enterprise
+        description: "Number of Enterprise tier accounts that churned"
+      - name: churned_pro
+        description: "Number of Pro tier accounts that churned"
+      - name: churned_basic
+        description: "Number of Basic tier accounts that churned"
+
+  - name: monthly_support_metrics
+    description: >
+      Monthly support ticket metrics and satisfaction analysis. Aggregates support 
+      ticket data by month to track volume, response times, satisfaction scores, and 
+      escalation patterns. Granularity: one row per month. Core metrics: total_tickets, 
+      avg_satisfaction_score, avg_first_response_minutes, escalated_tickets.
+    columns:
+      - name: ticket_month
+        description: "Month when tickets were submitted for time series analysis"
+      - name: total_tickets
+        description: "Total number of support tickets submitted during the month"
+      - name: accounts_with_tickets
+        description: "Number of unique accounts that submitted tickets"
+      - name: tickets_with_satisfaction
+        description: "Number of tickets with customer satisfaction scores provided"
+      - name: avg_satisfaction_score
+        description: "Average customer satisfaction score for the month (1-5 scale)"
+      - name: low_satisfaction_tickets
+        description: "Number of tickets with satisfaction score <= 3"
+      - name: accounts_with_low_satisfaction
+        description: "Number of unique accounts with low satisfaction scores"
+      - name: high_satisfaction_tickets
+        description: "Number of tickets with satisfaction score >= 4"
+      - name: avg_first_response_minutes
+        description: "Average time to first response in minutes"
+      - name: avg_resolution_hours
+        description: "Average time to resolution in hours"
+      - name: escalated_tickets
+        description: "Number of tickets escalated to higher support tiers"
+      - name: accounts_with_escalations
+        description: "Number of unique accounts with escalated tickets"
+      - name: high_priority_tickets
+        description: "Number of high priority tickets submitted"
