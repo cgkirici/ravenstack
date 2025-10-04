@@ -71,8 +71,8 @@ monthly_trial_metrics_by_source as (
 		count(distinct case when tc.paid_start_date is not null then tc.account_id end) as trial_conversions,
 		case 
 			when count(distinct tc.account_id) > 0 
-			then round(count(distinct case when tc.paid_start_date is not null then tc.account_id end) * 100.0 / 
-				count(distinct tc.account_id), 2)
+			then round(count(distinct case when tc.paid_start_date is not null then tc.account_id end) * 1.0 / 
+				count(distinct tc.account_id), 4)
 			else null
 		end as trial_to_paid_conversion_rate
 	from months m
@@ -92,8 +92,8 @@ monthly_upgrade_metrics_by_source as (
 		count(distinct case when tu.is_upgrade then tu.account_id end) as tier_upgrades,
 		case 
 			when count(distinct case when tu.previous_tier in ('Basic', 'Pro') then tu.account_id end) > 0 
-			then round(count(distinct case when tu.is_upgrade then tu.account_id end) * 100.0 / 
-				count(distinct case when tu.previous_tier in ('Basic', 'Pro') then tu.account_id end), 2)
+			then round(count(distinct case when tu.is_upgrade then tu.account_id end) * 1.0 / 
+				count(distinct case when tu.previous_tier in ('Basic', 'Pro') then tu.account_id end), 4)
 			else null
 		end as lower_to_higher_tier_conversion_rate
 	from months m
