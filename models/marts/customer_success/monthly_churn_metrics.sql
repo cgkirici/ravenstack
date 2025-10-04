@@ -80,11 +80,11 @@ final as (
         basic_at_start,
         
         -- churn rates (%)
-        round(safe_divide(churned_accounts * 100.0, accounts_at_start), 2) as churn_rate_pct,
-        round(safe_divide(cancelled_subscriptions * 100.0, nullif(subscriptions_at_start, 0)), 2) as cancel_rate_subscriptions_pct,
-        round(safe_divide(cancelled_enterprise * 100.0, nullif(enterprise_at_start, 0)), 2) as cancel_rate_enterprise_pct,
-        round(safe_divide(cancelled_pro * 100.0, nullif(pro_at_start, 0)), 2) as cancel_rate_pro_pct,
-        round(safe_divide(cancelled_basic * 100.0, nullif(basic_at_start, 0)), 2) as cancel_rate_basic_pct,
+        round(safe_divide(churned_accounts, accounts_at_start), 2) as churn_rate,
+        round(safe_divide(cancelled_subscriptions, nullif(subscriptions_at_start, 0)), 2) as cancel_rate_subscriptions,
+        round(safe_divide(cancelled_enterprise, nullif(enterprise_at_start, 0)), 2) as cancel_rate_enterprise,
+        round(safe_divide(cancelled_pro, nullif(pro_at_start, 0)), 2) as cancel_rate_pro,
+        round(safe_divide(cancelled_basic, nullif(basic_at_start, 0)), 2) as cancel_rate_basic,
         
         -- churn by reason (counts and percentages)
         {# churned_budget,

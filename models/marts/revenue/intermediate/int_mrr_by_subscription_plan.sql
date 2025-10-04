@@ -52,11 +52,11 @@ additional_metrics as (
         round((p.mrr / nullif(t.total_month_mrr, 0) * 100), 2) as pct_of_total_mrr,
         
         -- Growth vs prior month
-        lag(p.mrr, 1) over (partition by p.segment_type order by p.month_start) as prior_month_mrr,
-        p.mrr - lag(p.mrr, 1) over (partition by p.segment_type order by p.month_start) as mrr_change,
+        lag(p.mrr, 1) over (partition by p.segment_value order by p.month_start) as prior_month_mrr,
+        p.mrr - lag(p.mrr, 1) over (partition by p.segment_value order by p.month_start) as mrr_change,
         round(
-            ((p.mrr - lag(p.mrr, 1) over (partition by p.segment_type order by p.month_start)) 
-            / nullif(lag(p.mrr, 1) over (partition by p.segment_type order by p.month_start), 0) * 100),
+            ((p.mrr - lag(p.mrr, 1) over (partition by p.segment_value order by p.month_start)) 
+            / nullif(lag(p.mrr, 1) over (partition by p.segment_value order by p.month_start), 0) * 100),
             2
         ) as mrr_growth_rate_pct
         

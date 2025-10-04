@@ -14,7 +14,7 @@ with mrr as (
 ),
 
 accounts as (
-    
+     
     select * from {{ ref('stg__crm_accounts') }}
 
 ),
@@ -48,11 +48,11 @@ additional_metrics as (
 
 select 
     *,
-    lag(mrr, 1) over (partition by segment_type order by month_start) as prior_month_mrr,
-    mrr - lag(mrr, 1) over (partition by segment_type order by month_start) as mrr_change,
+    lag(mrr, 1) over (partition by segment_value order by month_start) as prior_month_mrr,
+    mrr - lag(mrr, 1) over (partition by segment_value order by month_start) as mrr_change,
     round(
-        ((mrr - lag(mrr, 1) over (partition by segment_type order by month_start)) 
-        / nullif(lag(mrr, 1) over (partition by segment_type order by month_start), 0) * 100),
+        ((mrr - lag(mrr, 1) over (partition by segment_value order by month_start)) 
+        / nullif(lag(mrr, 1) over (partition by segment_value order by month_start), 0) * 100),
         2
     ) as mrr_growth_rate_pct
 
