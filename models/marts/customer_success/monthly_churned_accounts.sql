@@ -21,7 +21,7 @@ churned_accounts_by_month as (
     select
         date_trunc(c.churn_date, month) as month_start,
 
-        count(distinct case when a.churn_flag is true then c.account_id else null end) as churned_accounts,
+        count(distinct case when a.customer_churn_flag is true then c.account_id else null end) as churned_accounts,
         count(distinct c.account_id) as cancelled_subscriptions,
         
         -- churn by reason

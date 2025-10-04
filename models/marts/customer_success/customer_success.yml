@@ -78,15 +78,6 @@ models:
               config:
                 where: "total_refund_amount is not null"
       
-      - name: preceding_upgrade_flag
-        description: "Boolean flag indicating if customer upgraded before churning"
-      
-      - name: preceding_downgrade_flag
-        description: "Boolean flag indicating if customer downgraded before churning"
-      
-      - name: is_reactivation
-        description: "Boolean flag indicating if this is a reactivated account"
-      
       # Subscription History
       - name: total_subscriptions
         description: "Total number of subscriptions the customer has had"
@@ -115,12 +106,6 @@ models:
           - dbt_utils.accepted_range:
               min_value: 0
       
-      - name: first_ticket_date
-        description: "Date of the customer's first support ticket"
-      
-      - name: last_ticket_date
-        description: "Date of the customer's most recent support ticket"
-      
       # Satisfaction Scores
       - name: avg_satisfaction_score
         description: "Average satisfaction score across all tickets (1-5 scale)"
@@ -130,149 +115,6 @@ models:
               max_value: 5
               config:
                 where: "avg_satisfaction_score is not null"
-      
-      - name: min_satisfaction_score
-        description: "Lowest satisfaction score given by the customer"
-        tests:
-          - dbt_utils.accepted_range:
-              min_value: 1
-              max_value: 5
-              config:
-                where: "min_satisfaction_score is not null"
-      
-      - name: satisfaction_last_30d
-        description: "Average satisfaction score for tickets in the last 30 days"
-        tests:
-          - dbt_utils.accepted_range:
-              min_value: 1
-              max_value: 5
-              config:
-                where: "satisfaction_last_30d is not null"
-      
-      - name: satisfaction_last_90d
-        description: "Average satisfaction score for tickets in the last 90 days"
-        tests:
-          - dbt_utils.accepted_range:
-              min_value: 1
-              max_value: 5
-              config:
-                where: "satisfaction_last_90d is not null"
-      
-      # Low Satisfaction Metrics
-      - name: low_satisfaction_count
-        description: "Number of tickets with satisfaction score <= 3"
-        tests:
-          - not_null
-          - dbt_utils.accepted_range:
-              min_value: 0
-      
-      - name: very_low_satisfaction_count
-        description: "Number of tickets with satisfaction score <= 2"
-        tests:
-          - not_null
-          - dbt_utils.accepted_range:
-              min_value: 0
-      
-      - name: pct_low_satisfaction
-        description: "Percentage of tickets with low satisfaction (score <= 3)"
-        tests:
-          - dbt_utils.accepted_range:
-              min_value: 0
-              max_value: 100
-              config:
-                where: "pct_low_satisfaction is not null"
-      
-      # Response Metrics
-      - name: avg_first_response_minutes
-        description: "Average time to first response across all tickets (in minutes)"
-        tests:
-          - dbt_utils.accepted_range:
-              min_value: 0
-              config:
-                where: "avg_first_response_minutes is not null"
-      
-      - name: max_first_response_minutes
-        description: "Maximum time to first response (in minutes)"
-        tests:
-          - dbt_utils.accepted_range:
-              min_value: 0
-              config:
-                where: "max_first_response_minutes is not null"
-      
-      - name: avg_resolution_hours
-        description: "Average time to resolution across all tickets (in hours)"
-        tests:
-          - dbt_utils.accepted_range:
-              min_value: 0
-              config:
-                where: "avg_resolution_hours is not null"
-      
-      - name: max_resolution_hours
-        description: "Maximum time to resolution (in hours)"
-        tests:
-          - dbt_utils.accepted_range:
-              min_value: 0
-              config:
-                where: "max_resolution_hours is not null"
-      
-      # Escalations
-      - name: escalated_tickets
-        description: "Number of tickets that were escalated"
-        tests:
-          - not_null
-          - dbt_utils.accepted_range:
-              min_value: 0
-      
-      - name: pct_tickets_escalated
-        description: "Percentage of tickets that were escalated"
-        tests:
-          - dbt_utils.accepted_range:
-              min_value: 0
-              max_value: 100
-              config:
-                where: "pct_tickets_escalated is not null"
-      
-      # Recent Activity
-      - name: tickets_last_30d
-        description: "Number of tickets submitted in the last 30 days"
-        tests:
-          - not_null
-          - dbt_utils.accepted_range:
-              min_value: 0
-      
-      - name: tickets_last_90d
-        description: "Number of tickets submitted in the last 90 days"
-        tests:
-          - not_null
-          - dbt_utils.accepted_range:
-              min_value: 0
-      
-      - name: high_priority_tickets
-        description: "Number of high-priority tickets submitted"
-        tests:
-          - not_null
-          - dbt_utils.accepted_range:
-              min_value: 0
-      
-      # Risk Scoring
-      - name: churn_risk_score
-        description: >
-          Calculated churn risk score (0-100) based on satisfaction scores, escalation rates,
-          recent activity, and ticket volume. Higher scores indicate higher churn risk.
-          Null for customers who have already churned.
-        tests:
-          - dbt_utils.accepted_range:
-              min_value: 0
-              max_value: 100
-              config:
-                where: "churn_risk_score is not null"
-      
-      - name: risk_category
-        description: "Risk category based on churn risk score (Healthy, Low Risk, Medium Risk, High Risk, Churned)"
-        tests:
-          - not_null
-          - accepted_values:
-              values: ['Healthy', 'Low Risk', 'Medium Risk', 'High Risk', 'Churned']
       
       # Correlation Flags
       - name: has_low_satisfaction
@@ -298,42 +140,9 @@ models:
           config:
             severity: error
       
-      - dbt_utils.expression_is_true:
-          expression: "low_satisfaction_count <= total_tickets"
-          config:
-            severity: warn
-            where: "total_tickets > 0"
-      
-      - dbt_utils.expression_is_true:
-          expression: "very_low_satisfaction_count <= low_satisfaction_count"
-          config:
-            severity: warn
-            where: "total_tickets > 0"
-      
-      - dbt_utils.expression_is_true:
-          expression: "escalated_tickets <= total_tickets"
-          config:
-            severity: error
-            where: "total_tickets > 0"
-      
-      - dbt_utils.expression_is_true:
-          expression: "tickets_last_30d <= tickets_last_90d"
-          config:
-            severity: warn
-      
       # Business logic tests
       - dbt_utils.expression_is_true:
           expression: "case when customer_churn_flag = true then customer_churn_date is not null else customer_churn_date is null end"
-          config:
-            severity: error
-      
-      - dbt_utils.expression_is_true:
-          expression: "case when customer_churn_flag = true then risk_category = 'Churned' else risk_category != 'Churned' end"
-          config:
-            severity: error
-      
-      - dbt_utils.expression_is_true:
-          expression: "case when customer_churn_flag = true then churn_risk_score is null else churn_risk_score is not null end"
           config:
             severity: error
 

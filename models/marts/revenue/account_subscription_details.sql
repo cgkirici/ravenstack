@@ -24,7 +24,7 @@ final as (
 	select
 		a.account_id,
 		a.account_name,
-		a.churn_flag,
+		a.customer_churn_flag,
 
 		count(distinct s.subscription_id) as total_subscriptions,
 		min(s.start_date) as first_subscription_date,

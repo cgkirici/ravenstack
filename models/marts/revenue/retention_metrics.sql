@@ -160,6 +160,7 @@ stickiness_normalized as (
 final as (
 
 	select
+		{{ dbt_utils.generate_surrogate_key(['fp.customer_status', 'fp.feature_name']) }} as retention_metrics_key,
 		fp.customer_status,
 		fp.feature_name,
 		fp.is_beta_feature,

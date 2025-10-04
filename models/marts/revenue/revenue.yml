@@ -72,7 +72,11 @@ models:
 
   - name: retention_metrics
     columns:
-      - name: feature_name
+      - name: retention_metrics_key
+        description: "Surrogate key combining customer_status and feature_name"
         tests:
           - not_null
           - unique
+      - name: feature_name
+        tests:
+          - not_null
