@@ -4,4 +4,6 @@ logs/
 .vscode
 .env/
 .user.yml
-
+package-lock.yml
+__pycache__/
+.DS_Store
