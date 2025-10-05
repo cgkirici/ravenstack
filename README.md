@@ -83,19 +83,17 @@ models/
 
 ### Revenue Analytics
 - **MRR Growth**: Month-over-month recurring revenue tracking
-- **Cohort Analysis**: Customer acquisition and retention by segments
+- **Cohort Analysis**: MRR by subscription and industry segments
 - **Conversion Rates**: Trial-to-paid and tier upgrade analysis
 
 ### Customer Success
 - **Churn Prediction**: Risk scoring based on satisfaction and support patterns  
 - **Support Correlation**: Ticket volume vs. churn relationship analysis
-- **Satisfaction Tracking**: CSAT trends and low-satisfaction flagging
 - **Ticket Classification**: Automated ML-powered topic classification (Billing, Technical, Product Usage, Account Access, General Feedback)
 
 ### Product Analytics  
 - **Feature Stickiness**: Retention correlation by feature usage
 - **Adoption Gaps**: Feature usage differences between retained vs. churned customers
-- **Beta Performance**: Beta feature success metrics
 
 ## 🔍 Data Quality & Testing
 
