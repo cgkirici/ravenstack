@@ -1,0 +1,45 @@
+version: 2
+
+models:
+
+  - name: retention_metrics
+    description: >
+      Feature popularity and stickiness analysis comparing retained vs churned customers. 
+      Contains feature usage metrics, popularity scores, and stickiness calculations 
+      to identify features that drive retention. Granularity: one row per customer_status 
+      per feature_name. Core dimensions: customer_status, feature_name, is_beta_feature. 
+      Core metrics: popularity_score, stickiness_score, penetration_rate.
+    columns:
+      - name: retention_metrics_key
+        description: "Surrogate key combining customer_status and feature_name for uniqueness"
+        tests:
+          - not_null
+          - unique
+      - name: customer_status
+        description: "Customer retention status: retained or churned"
+      - name: feature_name
+        description: "Product feature name for analysis"
+        tests:
+          - not_null
+      - name: is_beta_feature
+        description: "Boolean flag indicating feature is in beta testing phase"
+      - name: users_count
+        description: "Number of unique accounts using this feature"
+      - name: penetration_pct
+        description: "Percentage of customers in status segment using this feature"
+      - name: total_usage_events
+        description: "Total number of usage events for this feature"
+      - name: total_usage_minutes
+        description: "Total usage duration in minutes across all users"
+      - name: avg_months_with_usage
+        description: "Average number of months per user with feature usage activity"
+      - name: popularity_score
+        description: "Weighted popularity score 0-1 combining penetration, usage intensity, duration engagement, and frequency consistency"
+      - name: stickiness_score
+        description: "Feature stickiness score combining adoption gap (40%), usage intensity gap (30%), and retention rate (30%)"
+      - name: adoption_gap
+        description: "Difference in penetration rate between retained and churned customers"
+      - name: usage_intensity_gap
+        description: "Difference in average usage minutes between retained and churned customers"
+      - name: retention_rate
+        description: "Percentage of feature users who are retained (not churned)"
