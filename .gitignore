@@ -4,5 +4,4 @@ logs/
 .vscode
 .env/
 .user.yml
-analysis/
-seeds/
+
