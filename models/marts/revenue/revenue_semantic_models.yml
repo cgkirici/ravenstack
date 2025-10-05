@@ -1,0 +1,79 @@
+version: 2
+
+semantic_models:
+  - name: retention_metrics
+    description: >
+      Semantic model for feature popularity and stickiness analysis comparing retained vs churned customers.
+      Enable analysis of feature adoption patterns, usage behavior, and retention correlation.
+    
+    model: ref('retention_metrics')
+    
+    # Primary entity for the semantic model
+    entities:
+      - name: retention_metrics_key
+        type: primary
+        
+    # Dimensions for grouping and filtering
+    dimensions:
+      - name: customer_status
+        type: categorical
+        description: "Customer retention status: retained or churned"
+        
+      - name: feature_name
+        type: categorical  
+        description: "Product feature name for analysis"
+        
+      - name: is_beta_feature
+        type: categorical
+        description: "Boolean flag indicating feature is in beta testing phase"
+        
+      - name: popularity_category
+        type: categorical
+        description: "Categorized popularity level: highly_popular, moderately_popular, somewhat_popular, low_popularity"
+        
+      - name: stickiness_category
+        type: categorical
+        description: "Categorized stickiness level: highly_sticky, moderately_sticky, somewhat_sticky, low_stickiness"
+    
+    # Measures for aggregation and analysis
+    measures:
+      # Core Volume Metrics
+      - name: users_count
+        agg: sum
+        description: "Total number of unique accounts using this feature"
+        
+      - name: total_usage_events
+        agg: sum
+        description: "Total number of usage events for this feature across all users"
+        
+      - name: total_usage_minutes
+        agg: sum
+        description: "Total usage duration in minutes across all users of this feature"
+        
+      # Score Metrics
+      - name: popularity_score
+        agg: average
+        description: "Weighted popularity score (0-1) combining penetration, usage intensity, duration engagement, and frequency consistency"
+        
+      - name: stickiness_score
+        agg: average
+        description: "Feature stickiness score combining adoption gap (40%), usage intensity gap (30%), and retention rate (30%)"
+        
+      - name: penetration_pct
+        agg: average
+        description: "Percentage of customers in status segment using this feature"
+        
+      - name: retention_rate
+        agg: average
+        description: "Percentage of feature users who are retained (not churned)"
+        
+      # Gap Analysis Metrics  
+      - name: adoption_gap
+        agg: average
+        description: "Difference in penetration rate between retained and churned customers"
+        
+      - name: usage_intensity_gap
+        agg: average
+        description: "Difference in average usage minutes between retained and churned customers"
+
+
