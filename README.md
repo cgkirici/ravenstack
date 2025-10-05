@@ -155,5 +155,3 @@ python classify_tickets.py --dry_run
 - **BigQuery Integration**: Seamlessly integrates with dbt pipeline using profiles.yml configuration
 
 ---
-
-*Built with ❤️ using dbt for scalable, reliable analytics engineering*
