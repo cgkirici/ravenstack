@@ -1,8 +1,4 @@
-# RavenStack Analytics #### **Source Systems**
-- **CRM Database**: Customer accounts, subscriptions, churn events, feature usage aggregations
-- **Support System**: Tickets, satisfaction scores, escalations
-  - **ML Enhancement**: `classify_tickets.py` - Hybrid ML classifier for automated ticket topic classification
-- **Product Events**: Feature usage, session data, beta featurespeline
+# RavenStack Analytics #
 
 A comprehensive dbt project that transforms raw RavenStack CRM data into validated, modular models for revenue analysis, customer churn prediction, conversion tracking, and feature retention insights.
 
@@ -27,6 +23,8 @@ Source Systems → Staging → Intermediate → Marts → BI Tools
 
 #### **Source Systems**
 - **data dump from CRM Database**: Customer accounts, subscriptions, churn events, feature usage aggregations
+
+  - **ML Enhancement**: `classify_tickets.py` - Hybrid ML classifier for automated ticket topic classification
 
 #### **Data Warehouse**
 - **Platform**: BigQuery (Google Cloud)
